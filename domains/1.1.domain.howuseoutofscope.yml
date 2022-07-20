@@ -1,0 +1,8 @@
+version: "3.1"
+
+intents:
+  - howuse
+
+
+actions:
+  - action_howuse_outofscope

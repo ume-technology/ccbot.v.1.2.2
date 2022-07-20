@@ -1,0 +1,59 @@
+version: "3.1"
+
+intents:
+  - express_out
+  - express_back
+
+
+#slots:
+#  receive_uer_phone_out:
+#    type: text
+#    mappings:
+#      - type: from_text
+#        condition:
+#          - active_loop: express_out_form
+#            requested_slot: receive_uer_phone_out
+#
+#  receive_uer_phone_back:
+#    type: text
+#    mappings:
+#      - type: from_text
+#        condition:
+#          - active_loop: express_back_form
+#            requested_slot: receive_uer_phone_back
+
+
+
+
+forms:
+
+  express_out_form:
+    ignored_intents: [ ]
+    required_slots:
+      - phone_slot
+
+  express_back_form:
+    ignored_intents: [ ]
+    required_slots:
+      - phone_slot
+
+
+
+actions:
+  - action_get_express_out_status
+  - action_get_express_back_status
+
+responses:
+  utter_ask_express_out_form_phone_slot:
+    - text: "感謝您的來信，如果需查詢商品物流信息，請發送您下單時使用的電話號碼。\n我在收到您的信息后為您執行查詢操作。"
+  utter_give_user_order_sending:
+    - text: "通過您提供的電話信息:{phone_slot}，我幫您查詢到您的訂單已經在派送途中。\n我將會為您做催單操作，請您稍作等待，我也十分期待您完成簽收的那一天，感謝您對我工作的配合與支持！"
+  utter_give_user_order_other:
+    - text: "通過您提供的電話信息:{phone_slot}，我幫您查詢到您的訂單正在倉庫打包。\n我將通知倉庫做催單操作，請您稍作等待，我也十分期待您完成簽收的那一天，感謝您對我工作的配合與支持！"
+
+  utter_ask_express_back_form_phone_slot:
+    - text: "我已經注意到您的訂單狀況，請您告知我您下單時使用的電話信息。\n我將在收到您的信息后為您做進一步查詢工作。"
+  utter_give_user_order_backing:
+    - text: "通過您提供的電話信息:{phone_slot}，我幫您查詢到您的訂單正在退貨流程中。\n我將通知倉庫與物流做催單操作以加快您的退貨進度，請您稍作等待，感謝您對我工作的配合與支持！"
+  utter_give_user_no_order_backing:
+    - text: "通過您提供的電話信息:{phone_slot}，我查詢到您沒有任何訂單處於退貨狀態，請您再次確認。"

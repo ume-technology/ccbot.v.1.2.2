@@ -1,0 +1,13 @@
+version: "3.1"
+
+
+intents:
+  - httpurl:
+      ignore_entities:
+        - phone
+
+
+
+responses:
+  utter_httpurl:
+    - text: "我看到您發送了URL信息，很開心看到您發現了一款喜歡的商品，但是我目前沒有辦法處理這個鏈接請求。\n如果可以，請您發送具體的商品信息給我，我講進一步為您提供幫助！"

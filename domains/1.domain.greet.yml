@@ -1,0 +1,190 @@
+version: "3.1"
+
+
+
+intents:
+  - greet
+  #- greet:
+      # 已经取消了这个实体，所以这里不配置这个参数
+      #ignore_entities:
+      #  - http  # 问候意图需要忽略这个实体，因为一旦有这个实体，就是很明确的用户发送了一个 URL，这时候只需要结合 intent:httpurl 和这个实体 http 就可以很清晰的知道用户的真正请求是一个 url 信息
+
+
+
+slots:
+  # 这都是来自落地页才的信息填充起来的 slot |  s-standard
+  sgoods_slot:
+    type: text
+    mappings:
+      - type: custom
+
+  sprice_slot:
+    type: text
+    mappings:
+      - type: custom
+
+  ssize_slot:
+    type: text
+    mappings:
+      - type: custom
+
+  # 这都是用户自行发送过来的信息填充起来的 slot
+  goods_slot:  # goods from  user info
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: goods
+
+  logo_slot:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: logo
+
+  gcode_slot:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: gcode
+
+  attr_slot:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: attr
+
+  color_slot:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: color
+
+  count_slot:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: count
+
+  # 用来标识用户任何有用信息都没有提供
+  nothing_slot:
+    type: bool
+    mappings:
+      - type: custom
+
+
+actions:
+  - action_check_where_user_come_from
+
+
+responses:
+  utter_welcome_with_sgoods_slot:
+    - text: "感謝您到訪，我看到您正在關註:{sgoods_slot}；\n
+            商品属性:{attr_slot};\n
+            商品規格:{ssize_slot};\n
+            商品價格:{sprice_slot}。\n
+            這是目前該商品的最低價，所以您現在購買是非常划算的哦！"
+  #utter_user_from_sgoods_page_or_directly:
+  utter_user_from_sgoods_page:
+    - buttons:
+        # fixme 这个意图判断容易和 greet 意图整体起冲突，而且后续的逻辑也很复杂，所以这里先不实现
+        #- payload: 我要下单
+        #  title: 我需要購買商品請協助我下單完成購買
+
+        - payload: 如何使用
+          title: 我需要了解商品如何使用
+
+        #- paylaod: 售後服務
+        #  title: 請問售後服務都有哪些
+        #- paylaod: 開箱檢查
+        #  title: 收到貨物後我能否開箱檢查
+        - payload: 品質確認
+          title: 請問商品質量如何保證以及售後服務都有哪些
+        - payload: 商品產地
+          title: 請問商品的產地是哪裏
+        #- payload: 付款方式
+        #  title: 請問如何付款以購買商品
+        - payload: 商品配送
+          title: 我需要了解配送服務以及付款方式
+        - payload: 商品收據
+          title: 我需要商品的收據信息
+        - payload: 實體店鋪
+          title: 我可以咨詢客服的電話信息以獲取更多幫助嗎
+
+        - payload: 核查訂單
+          title: 我需要核查并确定是否修正我的訂單信息
+
+        # fixme 推荐功能 - 没有实现的功能
+        #- paylaod: 相似產品
+        #  title: 請問有沒有更多相似產品推薦
+        #- payload: 發現更多
+        #  title: 喜歡這個商品的用戶還會喜歡這些,選我發現更多好物
+      text: "我为您列出了大家最为感兴趣的一些问题，这将可以快速的协助您解决问题，以便节省您宝贵的时间，您可以從菜單中選擇您需要咨詢的問題，當然您也可以自行輸入您感興趣的問題。我將在收到您的反饋後為您提供更多服務。"
+
+
+  utter_welcome_with_goods_slot:
+    - text: "感謝您到訪，我看到您正在關註{goods_slot}。"
+
+  #utter_user_from_goods_page_or_directly:
+  utter_user_from_goods:
+    - buttons:
+        - payload: 如何使用
+          title: 我需要了解商品如何使用
+        # 这个操作也可以当作是根据 goods name 去商品库找到更多相关商品详情的过程
+        - payload: 商品價格
+          title: 我需要了解商品的價格
+        #- paylaod: 售後服務
+        #  title: 請問售後服務都有哪些
+        #- paylaod: 開箱檢查
+        #  title: 收到貨物後我能否開箱檢查
+        - payload: 品質確認
+          title: 請問商品質量如何保證以及售後服務都有哪些
+        - payload: 商品產地
+          title: 請問商品的產地是哪裏
+        #- payload: 付款方式
+        #  title: 請問如何付款以購買商品
+        - payload: 商品配送
+          title: 我需要了解配送服務以及付款方式
+        - payload: 商品收據
+          title: 我需要商品的收據信息
+        - payload: 實體店鋪
+          title: 我可以咨詢客服的電話信息以獲取更多幫助嗎
+        # fixme 推荐功能 - 没有实现的功能
+        #- paylaod: 相似產品
+        #  title: 請問有沒有更多相似產品推薦
+        #- payload: 發現更多
+        #  title: 喜歡這個商品的用戶還會喜歡這些,選我發現更多好物
+      text: "我为您列出了大家最为感兴趣的一些问题，这将可以快速的协助您解决问题，以便节省您宝贵的时间，您可以從菜單中選擇您需要咨詢的問題，當然您也可以自行輸入您感興趣的問題。我將在收到您的反饋後為您提供更多服務。"
+
+
+  utter_welcome_nothing:
+    - buttons:
+        #- payload: 我要訂購
+        #  title: 輸入您感興趣商品名發現多彩好物
+        - payload: 品質確認
+          title: 請問商品質量如何保證以及售後服務都有哪些
+        - payload: 商品收據
+          title: 我需要商品的收據信息
+        - payload: 商品配送
+          title: 我需要了解配送服務以及付款方式
+        - payload: 實體店鋪
+          title: 我需要了解店鋪和客服信息以獲取更多幫助
+        - payload: 核查訂單
+          title: 我需要核查并确定是否修正我的訂單信息
+        - payload: 物流查詢
+          title: 我需要查詢我的快遞物流信息
+        - payload: 退換進度
+          title: 我需要查詢退換貨進度信息
+        - payload: 取消訂單
+          title: 我能否取消我的訂單
+        # fixme 没有实现
+        #- payload: 我要下单
+        #  title: 我需要执行下单购买商品
+        #- paylaod: 殘次漏發
+        #  title: 我碰到了殘次漏發等商品問題
+      text: "感謝您的到訪，請問您需要什麼幫助呢？您可以選擇相應按鈕，或自行輸入您要咨詢的問題，我將為您提供幫助！"

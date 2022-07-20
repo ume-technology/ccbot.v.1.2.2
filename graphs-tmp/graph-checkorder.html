@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Rasa Core Visualisation</title>
+    <script src="https://dagrejs.github.io/project/dagre-d3/latest/dagre-d3.min.js"></script>
+    <script src="https://dagrejs.github.io/project/dagre/latest/dagre.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://dagrejs.github.io/project/graphlib-dot/v0.6.3/graphlib-dot.js"></script>
+</head>
+<body>
+<div id="errormsg" style="color: #b00"></div>
+<svg>
+    <style id="graph-style">
+        .node.invisible > rect {
+            display: none;
+        }
+
+        .node.start > rect {
+            fill: #7f7;
+            rx: 30;
+            ry: 18;
+        }
+
+        .node.end > rect {
+            fill: #f77;
+            rx: 30;
+            ry: 18;
+        }
+
+        .node:not(.active) > rect, .node:not(.active) > .label {
+            opacity: 0.4;
+        }
+
+        .edgePath:not(.active) path {
+            opacity: 0.4;
+        }
+
+        .node.ellipsis > rect {
+            fill: #CCC;
+        }
+
+        .node.intent > rect {
+            fill: #7ff;
+        }
+
+        .node.dashed > rect {
+            stroke-dasharray: 5;
+        }
+
+        text {
+            font-weight: 300;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serf, serif;
+            font-size: 14px;
+            color: #1f1d1d;
+        }
+
+        .node rect {
+            stroke: #444;
+            fill: #fff;
+            stroke-width: 1.5px;
+        }
+
+        .edgePath path {
+            stroke: #333;
+            stroke-width: 1.5px;
+        }
+
+        svg {
+            position: fixed;
+            top: 10px;
+            left: 0;
+            height: 100%;
+            width: 100%
+        }
+    </style>
+    <g></g>
+</svg>
+<script>
+
+  function serveGraph() {
+    let oldInputGraphValue;
+
+    const url = 'visualization.dot';
+    const refreshInterval = 500;
+
+    // trigger a refresh by fetching an updated graph
+    setInterval(function () {
+      fetch(url).then(r => r.text()).then(dot => {
+        document.getElementById('errormsg').innerHTML = '';
+        if (oldInputGraphValue === dot) return;
+
+        oldInputGraphValue = dot;
+        drawGraph(dot);
+      }).catch(err => {
+        document.getElementById('errormsg').innerHTML =
+          'Failed to update plot. (' + err.message + ')';
+      });
+    }, refreshInterval);
+  }
+
+  function drawGraph(graph) {
+    let g = graphlibDot.read(graph);
+    // Set margins, if not present
+    if (!g.graph().hasOwnProperty("marginx") &&
+      !g.graph().hasOwnProperty("marginy")) {
+      g.graph().marginx = 20;
+      g.graph().marginy = 20;
+    }
+    g.graph().transition = function (selection) {
+      return selection.transition().duration(300);
+    };
+    // Render the graph into svg g
+    d3.select("svg g").call(render, g);
+  }
+  // Set up zoom support
+  const svg = d3.select("svg"),
+    inner = d3.select("svg g"),
+    zoom = d3.zoom().on("zoom", function () {
+      inner.attr("transform", d3.event.transform);
+    });
+  svg.call(zoom);
+
+  // Create and configure the renderer
+  const render = dagreD3.render();
+
+  let isClient = false;
+  isClient = true;
+
+  if (isClient) {
+    // Mark all nodes and their edges as active
+    cssRules = document.getElementById('graph-style').sheet.cssRules;
+    cssRules[3].style.opacity = 1;
+    cssRules[4].style.opacity = 1;
+
+    let graph;
+    graph = `digraph  {
+0 [class="start active", fillcolor=green, fontsize=12, label=START, style=filled];
+"-1" [class=end, fillcolor=red, fontsize=12, label=END, style=filled];
+1 [class="", fontsize=12, label="..."];
+2 [class="", fontsize=12, label=action_deactivate_loop];
+3 [class="", fontsize=12, label=cancel_form];
+5 [class="", fontsize=12, label=cancel_form];
+6 [class="", fontsize=12, label=action_find_orders_and_survey];
+7 [class="", fontsize=12, label=survey_cancel_form];
+9 [class="", fontsize=12, label=survey_cancel_form];
+10 [class="", fontsize=12, label=action_submit_survey_cancel_form];
+12 [class="", fontsize=12, label=check_order_form];
+13 [class="", fontsize=12, label=action_check_orders_status];
+14 [class="", fontsize=12, label=utter_no_orders];
+18 [class="", fontsize=12, label=utter_give_user_order_info];
+19 [class="", fontsize=12, label=get_check_order_answer_form];
+20 [class="", fontsize=12, label=action_get_check_order_answer_from_user];
+21 [class="", fontsize=12, label=utter_order_check_ok];
+28 [class="", fontsize=12, label=utter_order_check_no];
+29 [class="", fontsize=12, label=get_new_order_name_form];
+30 [class="", fontsize=12, label=action_get_new_order_name];
+31 [class="", fontsize=12, label=get_new_order_phone_form];
+32 [class="", fontsize=12, label=action_get_new_order_phone];
+33 [class="", fontsize=12, label=get_new_order_address_form];
+34 [class="", fontsize=12, label=action_get_new_order_address];
+35 [class="", fontsize=12, label=action_achieve_change_order_in_database];
+36 [class=intent, fillcolor=lightblue, label="重复订单已经取消", shape=rect, style=filled];
+37 [class=intent, fillcolor=lightblue, label="有时候在网络看得到最近找不到就是我订的那一租", shape=rect, style=filled];
+0 -> 1  [class="", key=NONE, label=""];
+1 -> 5  [class="", key=NONE, label=""];
+1 -> 9  [class="", key=NONE, label=""];
+1 -> 36  [class="", key=0];
+1 -> 37  [class="", key=0];
+2 -> 3  [class="", key=NONE, label=""];
+3 -> "-1"  [class="", key=NONE, label=""];
+5 -> 6  [class="", key=NONE, label=""];
+6 -> 7  [class="", key=NONE, label=""];
+7 -> "-1"  [class="", key=NONE, label=""];
+9 -> 10  [class="", key=NONE, label=""];
+10 -> "-1"  [class="", key=NONE, label=""];
+12 -> 13  [class="", key=NONE, label=""];
+13 -> 14  [class="", key=NONE, label=""];
+13 -> 18  [class="", key=NONE, label=""];
+14 -> "-1"  [class="", key=NONE, label=""];
+18 -> 19  [class="", key=NONE, label=""];
+19 -> 20  [class="", key=NONE, label=""];
+20 -> 21  [class="", key=NONE, label=""];
+20 -> 28  [class="", key=NONE, label=""];
+21 -> "-1"  [class="", key=NONE, label=""];
+28 -> 29  [class="", key=NONE, label=""];
+29 -> 30  [class="", key=NONE, label=""];
+30 -> 31  [class="", key=NONE, label=""];
+31 -> 32  [class="", key=NONE, label=""];
+32 -> 33  [class="", key=NONE, label=""];
+33 -> 34  [class="", key=NONE, label=""];
+34 -> 35  [class="", key=NONE, label=""];
+35 -> "-1"  [class="", key=NONE, label=""];
+36 -> 2  [class="", key=0];
+37 -> 12  [class="", key=0];
+}
+`;
+    drawGraph(graph);
+  } else {
+    serveGraph();
+  }
+
+
+</script>
+</body>
+</html>

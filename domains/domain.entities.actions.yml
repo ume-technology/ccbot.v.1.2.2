@@ -1,0 +1,65 @@
+version: "3.1"
+
+#actions:
+#  - action_clean_slots
+
+entities:
+  - name
+  - phone
+  - height
+  - weight
+  - goods      # goods from user
+  - code
+  - gcode
+  - logo
+  - attr
+  - size       # size from user
+  - color
+  - count
+  - price      # price from user
+  - city
+  - part
+  - street
+
+
+# fixme 数据全部放开时把这里取消，因为已经在其他 domain 中配置了
+#responses:
+#  utter_welcome_nothing:
+#    - buttons:
+#        #- payload: 我要訂購
+#        #  title: 輸入您感興趣商品名發現多彩好物
+#        - payload: 品質確認
+#          title: 請問商品質量如何保證以及售後服務都有哪些
+#        - payload: 商品收據
+#          title: 我需要商品的收據信息
+#        - payload: 商品配送
+#          title: 我需要了解配送服務以及付款方式
+#        - payload: 實體店鋪
+#          title: 我需要了解店鋪和客服信息以獲取更多幫助
+#        - payload: 核查訂單
+#          title: 我需要核查并确定是否修正我的訂單信息
+#        - payload: 物流查詢
+#          title: 我需要查詢我的快遞物流信息
+#        - payload: 退換進度
+#          title: 我需要查詢退換貨進度信息
+#        - payload: 取消訂單
+#          title: 我能否取消我的訂單
+#        # fixme 没有实现
+#        #- payload: 我要下单
+#        #  title: 我需要执行下单购买商品
+#        #- paylaod: 殘次漏發
+#        #  title: 我碰到了殘次漏發等商品問題
+#      text: "感謝您的到訪，請問您需要什麼幫助呢？您可以選擇相應按鈕，或自行輸入您要咨詢的問題，我將為您提供幫助！"
+#
+#slots:
+#  nothing_slot:
+#    type: bool
+#    mappings:
+#      - type: custom
+#
+#  goods_slot:  # goods from  user info
+#    type: text
+#    influence_conversation: true
+#    mappings:
+#      - type: from_entity
+#        entity: goods

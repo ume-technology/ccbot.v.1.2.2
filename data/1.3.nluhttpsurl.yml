@@ -1,0 +1,21 @@
+version: "3.1"
+
+
+rules:
+  - rule: response http request
+    steps:
+      - intent: httpurl
+      - action: utter_httpurl
+
+
+nlu:
+  - regex: to reg http
+    examples: |
+      - \bhttp\b
+  - intent: httpurl
+    examples: |
+      - https://www.baidu.com/
+      - https://baijiahao.baidu.com/s?id=1737484146675472106
+      - https://baijiahao.baidu.com/s?id=1737492020103386665&wfr=spider&for=pc
+      - https://baike.baidu.com/tashuo/browse/content?id=5c29a1b9235352f14d877cd3
+      - https://baike.baidu.com/science

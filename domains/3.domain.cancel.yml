@@ -1,0 +1,125 @@
+version: "3.1"
+
+intents:
+  - cancel
+  - usertellphone
+
+slots:
+  phone_slot:
+    type: text
+    mappings:
+      - entity: phone
+        type: from_entity
+        condition:
+          - active_loop: cancel_form
+            requested_slot: phone_slot
+          - active_loop: check_order_form
+            requested_slot: phone_slot
+          - active_loop: express_out_form
+            requested_slot: phone_slot
+          - active_loop: express_out_form
+            requested_slot: phone_slot
+      - intent:
+          - usertellphone
+        type: from_text
+        condition:
+          - active_loop: cancel_form
+            requested_slot: phone_slot
+          - active_loop: check_order_form
+            requested_slot: phone_slot
+          - active_loop: express_out_form
+            requested_slot: phone_slot
+          - active_loop: express_out_form
+            requested_slot: phone_slot
+      - entity: phone
+        not_intent: httpurl
+        type: from_entity
+        condition:
+          - active_loop: cancel_form
+            requested_slot: phone_slot
+          - active_loop: check_order_form
+            requested_slot: phone_slot
+          - active_loop: express_out_form
+            requested_slot: phone_slot
+          - active_loop: express_out_form
+            requested_slot: phone_slot
+      - type: from_entity
+        entity: phone
+
+
+
+  order_list:
+    type: list
+    influence_conversation: true
+    mappings:
+      - type: custom
+
+  there_is_order_slot:
+    type: bool
+    influence_conversation: true
+    mappings:
+      - type: custom
+
+  there_is_order_slot_can_cancel:
+    type: bool
+    influence_conversation: true
+    mappings:
+      - type: custom
+
+
+  open_sure_cancel_feedback:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_text
+        conditions:
+          # slots中设置的激活的form是rules正常持续运行下去的前提，因为rules中会用到一环扣一环依次激活的form,可以看出来，slot中激活相应的form之后，紧跟着就配置了这个刚被激活的form需要的slot信息
+          - active_loop: survey_cancel_form
+            requested_slot: open_sure_cancel_feedback
+
+forms:
+  cancel_form:
+    ignored_intents: []
+    required_slots:
+      - phone_slot
+
+  survey_cancel_form:
+    ignored_intents: [ ]
+    required_slots:
+      - open_sure_cancel_feedback
+
+actions:
+  - action_find_orders_and_survey
+  - action_submit_survey_cancel_form
+  - action_submit_survey_cancel_form_final
+
+responses:
+  utter_ask_cancel_form_phone_slot:
+    - text: "很抱歉看到您需要取消訂單，首先我需要您提供電話號碼，以便我幫您確認訂單信息。"
+
+  utter_no_orders:
+    # fixme 這個涉及到這個業務流程重新 restart 的業務邏輯的實現，看重新输入 phone 后能否重新查询
+    - text: "很抱歉，通過您提供的電話信息：{phone_slot}，沒有為您查到任何相關訂單信息，請您重新檢視您輸入的電話信息是否有誤。"
+
+  utter_give_user_order_info:
+    - text: "通過您提供的電話信息:{phone_slot}，我幫您查詢到如下的訂單信息：\n{order_list}。"
+
+  utter_ban_cancel:
+    - text: "通過您提供的電話信息：{phone_slot},我查詢到您的訂單目前已經發貨且在派送途中，所以我暫時沒有辦法幫您取消這個訂單。\n您可以收到貨后再決定是否仍需退貨，如果到時候您仍需要退貨，您隨時可以發起退貨流程。感謝您對我工作的支持！"
+
+  utter_ask_survey_cancel_form_open_sure_cancel_feedback:
+    - buttons:
+        - payload: 確需取消
+          title: 確需取消訂單
+        - payload: 暫不取消
+          title: 收到貨物后再做決定
+      text: "因此您有上述兩種方案處理您的訂單，儘管如此，我依然認為您購買的商品值得您擁有。\n
+            您可以嘗試在收到貨物之後后再另行決定是否需要退貨而不是現在取消訂單。無論如何，我們的商品支持7天鑒賞期，屆時您不滿意再執行退貨操作一樣會得到及時處理！"
+
+
+  utter_achieve_cancel:
+    # fixme 做更多的商品推荐功能 |  具体业务会有更多的逻辑挽回该订单
+    - text: "看到這種情況我感到很遺憾，但是我已經幫助您取消了目標訂單。"
+
+  utter_stop_cancel:
+    - text: "感謝您一如既往地支持與喜愛，我們將會盡速為您展開配送服務，期待您收到包裹的那一天。祝您一切順利！"

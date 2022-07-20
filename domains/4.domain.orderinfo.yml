@@ -1,0 +1,146 @@
+version: "3.1"
+
+
+intents:
+  - orderinfo
+
+
+slots:
+  have_order_need_change:   # condition - 通过电话查询后确认是否需要查询订单
+    type: bool
+    influence_conversation: true
+    mappings:
+      - type: custom
+
+
+  open_order_check_answer_feedback: # 有訂單的情況下確認是否需要修改訂單
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: get_check_order_answer_form
+            requested_slot: open_order_check_answer_feedback
+
+
+  condition_do_not_need_change_order:  # 指示是前往修改訂單的路徑還是停止修改訂單的路徑
+    type: bool
+    influence_conversation: true
+    mappings:
+      - type: custom
+
+
+  open_new_order_name_feedback:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: get_new_order_name_form
+            requested_slot: open_new_order_name_feedback
+
+
+
+  open_new_order_phone_feedback:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: get_new_order_phone_form
+            requested_slot: open_new_order_phone_feedback
+
+  open_new_order_address_feedback:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: get_new_order_address_form
+            requested_slot: open_new_order_address_feedback
+
+  open_final_ensure_new_order_feedback:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: get_final_ensure_new_order_form
+            requested_slot: open_final_ensure_new_order_feedback
+
+forms:
+  check_order_form:
+    ignored_intents: [ ]
+    required_slots:
+      - phone_slot
+
+  get_check_order_answer_form:
+    ignored_intents: [ ]
+    required_slots:
+      - open_order_check_answer_feedback
+
+  get_new_order_name_form:
+    ignored_intents: [ ]
+    required_slots:
+      - open_new_order_name_feedback
+
+  get_new_order_phone_form:
+    ignored_intents: [ ]
+    required_slots:
+      - open_new_order_phone_feedback
+
+  get_new_order_address_form:
+    ignored_intents: [ ]
+    required_slots:
+      - open_new_order_address_feedback
+
+  get_final_ensure_new_order_form:
+    ignored_intents: [ ]
+    required_slots:
+      - open_final_ensure_new_order_feedback
+
+
+actions:
+  - action_check_orders_status
+  - action_get_check_order_answer_from_user
+  - action_get_new_order_name
+  - action_get_new_order_phone
+  - action_get_new_order_address
+  - action_achieve_change_order_in_database
+
+
+responses:
+  utter_ask_check_order_form_phone_slot:
+    - text: "如果您需要查詢并核對您的訂單，請告訴我您下單時使用的電話號碼，我在收到該信息后為您執行訂單查詢操作。"
+
+  utter_give_user_order_info:
+    - text: "通過您提供的電話信息:{phone_slot}，我幫您查詢到如下的訂單信息：\n{order_list}。"
+
+  utter_ask_get_check_order_answer_form_open_order_check_answer_feedback:
+    - buttons:
+        - payload: 確認無誤
+          title: 我的訂單信息是正確的
+        - payload: 訂單修正
+          title: 我需要修正我的訂單信息
+      text: "請問幫助您查詢到的訂單信息是否正確，如果不正確，您是否需要我幫您修改訂單信息？\n為方便您的操作，您只需要選擇上述選項即可，感謝您的配合。"
+
+  utter_order_check_ok:
+    - text: "感謝您的反饋，我們將會按照該訂單信息為您盡速發貨，期待您收到商品的那一天。祝您生活愉快！"
+
+  utter_order_check_no:
+    - text: "我看到您需要修改訂單。我會引導您完成新訂單的信息輸入。\n
+            請注意，接下來您輸入的信息請務必準確，因為這些信息將會是您新訂單將要使用的信息。"
+
+  utter_ask_get_new_order_name_form_open_new_order_name_feedback:
+    - text: "現在請您告訴我新訂單將要使用的姓名："
+
+  utter_ask_get_new_order_phone_form_open_new_order_phone_feedback:
+    - text: "接下來，請您告訴我新訂單將要使用的電話信息："
+
+  utter_ask_get_new_order_address_form_open_new_order_address_feedback:
+    - text: "最後，請您輸入新訂單將要使用的地址信息，馬上就要完成，我即將為您完成訂單的修改操作！"
+
+  utter_achieve_change_order_in_database:
+    - text: "感謝您的配合！您的新訂單信息如下：\n
+            姓名:{open_new_order_name_feedback}\n電話:{open_new_order_phone_feedback}\n地址:{open_new_order_address_feedback}\n
+            您的訂單已經完成修改，我們將按照最新的訂單信息為您盡速展開配送服務。祝您生活愉快！"

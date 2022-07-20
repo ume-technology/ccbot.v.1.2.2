@@ -1,0 +1,181 @@
+version: "3.1"
+
+
+rules:
+  - rule:  cancel_form and no order
+    steps:
+      - intent: cancel
+      #- action: action_deactivate_loop
+      #- active_loop: null
+      - action: cancel_form
+      - active_loop: cancel_form
+      - active_loop: null
+      - action: action_find_orders_and_survey
+      - slot_was_set:
+          - there_is_order_slot: False
+      - action: utter_no_orders
+      - action: action_deactivate_loop
+      - active_loop: null
+      #- action: action_clean_slots
+
+  - rule: cancel_form and have order but ban cancel
+    steps:
+      - intent: cancel
+      #- action: action_deactivate_loop
+      #- active_loop: null
+      - action: cancel_form
+      - active_loop: cancel_form
+      - active_loop: null
+      - action: action_find_orders_and_survey
+      - slot_was_set:
+          - there_is_order_slot: True
+      - action: utter_give_user_order_info
+      - action: action_submit_survey_cancel_form
+      - active_loop: null
+      - slot_was_set:
+          - there_is_order_slot_can_cancel: False
+      - action: utter_ban_cancel
+      - action: action_deactivate_loop
+      - active_loop: null
+      #- action: action_clean_slots
+
+  - rule: cancel_form and have order and survey ensure cancel
+    steps:
+      - intent: cancel
+      #- action: action_deactivate_loop
+      #- active_loop: null
+      - action: cancel_form
+      - active_loop: cancel_form
+      - active_loop: null
+      - action: action_find_orders_and_survey
+      - slot_was_set:
+          - there_is_order_slot: True
+      - action: utter_give_user_order_info
+      - action: action_submit_survey_cancel_form
+      - slot_was_set:
+          - there_is_order_slot_can_cancel: True
+      - action: survey_cancel_form
+      - active_loop: survey_cancel_form
+      - active_loop: null
+      - action: action_submit_survey_cancel_form_final
+      - action: action_deactivate_loop
+      - active_loop: null
+      #- action: action_clean_slots
+
+
+
+nlu:
+  - regex: reg phone number
+    examples: |
+      - \d+
+  - intent: usertellphone
+    examples: |
+      - 电话[1125656](phone)
+      - 我的电话是[27326232](phone)
+      - 我的电话[272323232](phone)
+      - 移动号码[2322672](phone)
+      - 移动手机[127827](phone)
+      - 家里电话[23278782](phone)
+      - 座机[232432](phone)
+      - 座机号码[997790](phone)
+      - [456562321](phone)
+      - [12565231](phone)
+      - [155622312](phone)
+
+
+  - intent: cancel
+    examples: |
+      - 取消订单
+      - 我需要取消订单
+      - 我需要取消我的订单
+      - 我可以取消订单吗
+      - 如何取消订单
+      - 我买错了需要取消订单
+      - 抱歉我取消订的商品[699](price)
+      - 不好意思我要取消订单[赖淑惠](name)[0931352237](phone)
+      - 我叫[林慧贞](name)取消购买的[蚊帐](goods)[899](price)
+      - 那请取消我的另一张订单不用出货了
+      - 我想请问如何取消订单
+      - 重复订单已经取消
+      - 现在还来得及取消订单吗
+      - 我在这网页上购买商品现在我不买了我要取消订单不想买请帮我取消
+      - 我要取消订单不买了
+      - 我想取消订单
+      - 我重复下单请协助取消标记红框那笔订单
+      - 不小心按到购买了要取消
+      - 临时有事先取消喔
+      - 请尽速回复否则我要取消订单
+      - 我昨天有下这个单我想取消因为今天有在店面买了类似的所以想取消单
+      - 不用了我不要了在此谢谢你
+      - [1199](price)可以帮我们取消吗
+      - [茶具](goods)不要
+      - 你好我想取消订单请问要怎么取消呢订单编号为[GT2204181329213IG185](code)想送女儿用但女儿说不适用所以取消
+      - 这样会有麻烦呢那订单可以帮我取消吗因为我是公司购买没发票不能请款作帐的
+      - 这单不要寄取消
+      - 你好我要取消Lacoste的订单谢谢
+      - 我另外一个订单你取消吧我不敢买了
+      - 我要取消刚刚的订单[GT2203182210406AV4A4](code)我要取消谢谢
+      - 不好意思这是我昨天晚上下的单今天因为看看[荷包](goods)觉得不太有钱买想要取消麻烦了
+      - 现在都是已读不回是怎样客服挂线吗那我取消订单我不想等了
+      - 请问如何取消订单
+      - 你好我想取消订单请问要怎么取消呢
+      - 取消[透明](attr)[防水胶](goods)太久了
+      - 不好意思喔家人还是很反对麻烦先帮我取消好了谢谢你
+      - 取消订单因为我女儿已经有订了他爸爸不知情又订了所以真抱歉只好取消订单真歹势晚安
+      - 请回可取消订单吗现在还来得及取消订单吗
+      - 你好我[310](price)本来有订[弹弓](goods)想取消订单我订购的电话号码是[0963694110](phone)请帮我取消订单谢谢[江先生](name)敬上
+      - 我的[车用遮](goods)出货了没如果没有要取消了
+      - 我要取消订单
+      - 你好我要取消Lacoste的订单谢谢[六只](count)[药膏](goods)[903583361](phone)
+      - 请问可不可以先取消那张单
+      - 请问如何取消订单[庄文凤](name)[0937673426](phone)不好意思我是订[和美](logo)[铁锅](goods)因为先生不同意所以要退订不好意思喔
+      - 家人还是很反对麻烦先帮我取消好了谢谢你谢谢你您好我是[庄文凤](name)电话[0937673426](phone)麻烦帮我确认订单订[和美](logo)[铁锅](goods)是否已取消因为昨天下午收到简讯它说消毒好就准备出货
+      - 昨天那个订单可以帮我取消吗[0979708798](phone)的
+      - 我可能要去南部无法订购了抱歉[980860878](phone)我是要出国去工作的无法订购
+      - 这样会有麻烦呢那订单可以帮我取消吗因为我是公司购买没发票不能请款作帐的[939993322](phone)
+      - 我想取消订货
+      - 我可能要去南部无法订购了抱歉
+      - 对不起我先取消好了等我有钱时再买
+      - 我是要出国去工作的无法订购
+      - 请帮我消订单好吗我的订单是否己取消请回答并确立
+      - 请回可取消订单吗
+      - 因为我们一起订[3个](count)的颜色没决定改来改去还是你暂停决定好再从订货
+      - 抱歉我取消订的商品[699](price)不用送来因不需要
+      - 先帮我取消
+      - 星期三已经说取消订单了
+      - 您好不好意思我想取消订单
+      - 您好我刚订购的得[恩堂](logo)[眼镜](goods)请取消订单我先生说他的度数要[600度](size)才可用对不起订货人[苏心慈](name)
+      - 请协助取消标记红框那笔订单
+      - 您好不好意思我想取消订单订单号码[GT220415021022S85W43](code)姓名[陈俊男](name)电话[0988036436](phone)取消原因订错商品
+      - 没有谢谢您请问多久时间没收到就可以取消
+      - 您好还没寄来不然我先取消订货再重新下订单very3Q
+      - 不好意思我取消订单暂时不用出货改日需要在告知您们
+      - 您好我们老板决定要取消订单编号为[GT220328104521R6JGG1](code)所以请取消订单老板说送货来也拒收所以请确实取消
+      - 建议不用出货浪费您们的时间而已我们已经有买[肥皂](goods)了也到货使用了有效果再消费
+      - 我想取消因为一次要买那么多才便宜我有找到不用一次购买多数量才便宜的所以请取消谢谢
+      - 谢谢不要多寄送往返取消订单真的有需要再订
+      - 我要取消订单[邹修宏](name)[981853788981853789](code)
+      - 我订购了[3件](count)[1350nt](price)包邮为什么[一件](count)要[750](price)的价格如果它与我的订单不符我将取消它
+      - 不好意思要退订[铁锅](goods)因家母有意见家里好几个[锅](goods)了又买所以被骂了如收货将会冷战好几个月实在实在很抱歉
+      - 还是把这张单取消我从新订购
+      - 要取消订单谢谢
+      - 不好意思我要退订
+      - 您好我是[庄文凤](name)电话[0937673426](phone)麻烦帮我确认订单订[和美](logo)[铁锅](goods)是否已取消因为昨天下午收到简讯它说消毒好就准备出货
+      - 您好我今日订单下错了要取消请与我联络谢谢
+      - 没回答我就先取消了临时有事先取消喔
+      - 没回答我就先取消了
+      - 不好意思我之前有订购[2瓶](count)[一组](count)[补漏王](goods)共[78O元](price)整我想要退订我的订单编号是[GT2204O619361I46D1U6](code)请把我取消谢谢
+      - 如果没改成取消定单
+      - 请帮我消订单好吗
+      - 请问能退定吗
+      - 就说已取消订货吗
+      - 抱歉可以取消吗家人又不要了
+      - 请问我的订单取消了吗
+      - 不好意思麻烦取消订单
+      - 您好早上有下订单[彰化](attr)[和美](logo)[铁锅](goods)因主义改变想取消订单请问我要怎么做谢谢
+      - 先停止决定好再重新订购
+      - 你好麻烦帮我取消订单[王忻彤](name)[0920728861](phone)原因是要先取消订单我要看其他的在一起订到时先帮我取消
+      - 不好意思我是订[和美](logo)[铁锅](goods)因为先生不同意所以要退订
+      - 我的订单是否己取消请回答并确立
+      - 谢谢不要多寄送往返取消订单真的有需要再订[魏千妮](name)[0935624608](phone)
+      - 因为[328](price)订购到现在还没收到货我们老板已经购买别家的商品使用所以他觉得贵公司的货来不及让客户使用而且上周也向贵公司反应过了所以今天才会叫我向您说要取消而且会拒收

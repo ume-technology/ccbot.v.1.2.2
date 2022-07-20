@@ -1,0 +1,281 @@
+version: "3.1"
+
+# - 已超过一星期想确定是否有订货成功
+# - 客福我的订单到底有效没为什么等到现在都没有下文
+# - 谢谢请问目前订单[GT203112335152160](code)的进度如何谢谢[陈品瑜](name)[0955155411](phone)
+
+
+#rules:
+#  - rule: activate check_order_form
+#    steps:
+#      - intent: orderinfo
+#      #- action: action_deactivate_loop
+#      #- active_loop: null
+#      - action: check_order_form         # ask phone to get order info |  识别到意图就意味着需要告诉 dialogue ：你应该去做准备好目标 form 的 action，我要向表单中包含的 slot 位填写 value
+#      - active_loop: check_order_form    # 那么 tracker 要做的事情就是需要激活这个 form， 以等待用户的输入以填充 form，这时候也会对用户发起相应的提问
+#
+#
+#  - rule: submit check_order_form | have order need  or not
+#    condition:
+#      - active_loop: check_order_form  # 提交时需要保证目标表单处于激活状态；
+#    steps:
+#      - action: check_order_form    # 告诉 dialogue：用户已经完成了 form 的填充，现在提交表单时，意味着这个 form 已经被 action 填充了；执行提交操作吧，也就是说把 action 执行的 event 提交到 tracker 中
+#      # 如果这里不关闭这个 form，会爆出和 action_listen 冲突的 BUG
+#      - active_loop: null           # 告诉 dialogue，一切状态都已经提交到 tracker 中了，现在可以停止上述 form 了;
+#      - action: action_check_orders_status  # 订单查询动作并答复订单信息
+#      - action: get_check_order_answer_form
+#      - active_loop: get_check_order_answer_form
+
+
+
+
+rules:
+  - rule:  check_order_form  and no
+    steps:
+      - intent: orderinfo
+      - action: check_order_form         # ask phone to get order info |  查询订单
+      - active_loop: check_order_form
+      - active_loop: null
+      - action: action_check_orders_status
+      - slot_was_set:
+          - have_order_need_change: False
+      - action: utter_no_orders
+      - action: action_deactivate_loop
+      - active_loop: null
+      #- action: action_clean_slots
+
+  - rule:  check_order_form - and have and  correct
+    steps:
+      - intent: orderinfo
+      - action: check_order_form         # ask phone to get order info |  查询订单
+      - active_loop: check_order_form
+      - active_loop: null
+      - action: action_check_orders_status
+      - slot_was_set:
+          - have_order_need_change: True
+      - action: utter_give_user_order_info
+      - action: get_check_order_answer_form
+      - active_loop: get_check_order_answer_form
+      - active_loop: null
+      - action: action_get_check_order_answer_from_user
+      - slot_was_set:
+          - condition_do_not_need_change_order: True
+      - action: utter_order_check_ok
+      - action: action_deactivate_loop
+      - active_loop: null
+      #- action: action_clean_slots
+
+
+  - rule: check_order_form - and have and  wrong
+    steps:
+      - intent: orderinfo
+      - action: check_order_form         # ask phone to get order info |  查询订单
+      - active_loop: check_order_form
+      - active_loop: null
+      - action: action_check_orders_status
+      - slot_was_set:
+          - have_order_need_change: True
+      - action: utter_give_user_order_info
+      - action: get_check_order_answer_form
+      - active_loop: get_check_order_answer_form
+      - active_loop: null
+      - action: action_get_check_order_answer_from_user
+      - slot_was_set:
+          - condition_do_not_need_change_order: False
+      - action: utter_order_check_no
+      - action: get_new_order_name_form
+      - active_loop: get_new_order_name_form
+      - active_loop: null
+      - action: action_get_new_order_name
+      - action: get_new_order_phone_form
+      - active_loop: get_new_order_phone_form
+      - active_loop: null
+      - action: action_get_new_order_phone
+      - action: get_new_order_address_form
+      - active_loop: get_new_order_address_form
+      - active_loop: null
+      - action: action_get_new_order_address
+      - action: action_achieve_change_order_in_database
+      - action: action_deactivate_loop
+      - active_loop: null
+      #- action: action_clean_slots
+
+
+nlu:
+  - regex: reg intent orderindo
+    examples: |
+      - \b核查\b
+      - \b确认\b
+      - \b核查訂單\b
+      - \b核查订单\b
+      - \b核查确认\n
+  - intent: orderinfo
+    examples: |
+      - 核查訂單
+      - 核查订单
+      - 核对订单
+      - 核查订单信息
+      - 请给我货号
+      - 能给我货号吗
+      - 麻烦帮我查询一下订购有成功吗
+      - 有查询到吗
+      - 我的订单信息
+      - 帮我确认我的订单信息
+      - 核查确认我的订单
+      - 核查确认我的订单
+      - 我订购有成功吗
+      - 请问如何确认是否下单成功
+      - 不要弄错了
+      - 订单不要弄错了
+      - 我想请问一下为什么没有看到我的订单
+      - 我订购的是[四层两组](size)不要弄错了每一组有四件[蒸杯](goods)的
+      - 你们好我有重新订购贵公司产品[pest](logo)驱逐蚊子小强老鼠我重新订购的是希望能够成功
+      - 有时候在网络看得到最近找不到就是我订的那一租
+      - 你查不到订单号码你可以帮我订购组谢谢
+      - 请问本人昨天晚上有订[油性](attr)[万胶](goods)没有订到吗
+      - 如果有看到我刚才没发出的订单不要重复哟
+      - 抱歉有看到吗我的订单
+      - 刚刚有订[眼镜](goods)[250度](size)[300度](size)[买一送一](price)
+      - 之前问你问我的货号是什么东西呢可告知一下吗
+      - 你好有看到我的订单吗
+      - 我要确认是[750元](price)[四瓶](count)若不是我不会收货请确认
+      - 请问是否查询到了我的订单
+      - 这次讯息有是一样的只写货号不知道多少钱可不可以帮帮忙吗
+      - 已有订购[帽子](goods)不知道是否颜色可不一样
+      - 我是否有订购货未来哪里可查询
+      - 我想请问有一个[0926146905](phone)[黄荣华](name)的订单是否有成立
+      - 目前只保留一单[GT204121503148082](code)[雾蓝色](color)和[黑色](color)[各一](count)[880元](price)的
+      - 我订购的[撕拉](attr)[面膜](goods)是[699](price)吗[0977301123](phone)[贾哓红](name)
+      - 订单[GT202260629304254](code)查到了吗
+      - [976c320013938](code)是什么货呢
+      - [7538475457](code)货号请问什么货呢
+      - 我订成功了吗
+      - 你好请问我有订[美白](attr)[抗皱](attr)班吗请回答
+      - 查询不到我的订单想麻烦您帮我查询一下再请您告知谢谢您
+      - 您好我是[吴慧芳](name)电话[0983158596](phone)刚才有在线上向贵公司订购[沐浴乳](goods)[9瓶](count)套装组前几天也订购了[沐浴衣](goods)[2件](count)
+      - 你好有看到我的订单吗我订的是[美国](part)第代[可脱缷式](attr)[美白](attr)[牙套](goods)
+      - 不知订单号码没截图
+      - 请问有订购商品如何查询
+      - 小编你好请问本人有订购成功吗请回赖订购品号给我好吗
+      - 这账号有购买成功吗
+      - 我是不是有在你们网站上购买东西
+      - 查询订单[7532428934](code)
+      - 我只需订购[9件](count)那一组就好[3件](count)那一组我就不定了
+      - 我有下单
+      - 你好我有跟你们订这产品
+      - 已订购了
+      - 是否可以给我货号呢能给我货号吗是新竹客运送来的吗
+      - 可以告诉我正确的数量和地址
+      - 我定的商品[7464471851](gcode)请问查寻进度为什么显示入仓了
+      - 因为订购清单看不清楚连续订了三次我要一次的订购就好了
+      - 我下的订单[两双](count)都是[40号](size)
+      - 因为这是没有登记会员的所以我查找不到所有的记录希望你帮我查查我只需要一张单[3只](count)[鞋子](goods)
+      - 我今天忘记重复订单了可不可以帮我取下调电话[0955579448](phone)
+      - 我找不到[电池](goods)款订单
+      - 可以帮我查一下吗
+      - 不好意思你可以在帮我查一下吗
+      - 拜托你帮忙注意我需要的尺寸是[XL](size)昨天晚上
+      - 我下单成功了吗
+      - 请问我的订单出货几笔
+      - 我之前已帮你订左[6条](count)啦是的要[大码](size)
+      - [一组](count)有几罐恳请告知麻烦你们晚一点立刻去领取货
+      - 我记得我买了[美白](attr)[牙贴](goods)跟[眉笔](goods)
+      - 已下单[袜子](goods)是否成功
+      - 第一单[一台](count)取消第二单[两台](count)正确
+      - 你没办法查到我的订单吗[0961368966](code)[陈阡郁](name)
+      - 我的新订单用[林聿蓁](name)的名字
+      - 请问这订单是否确
+      - 有订单编号吗
+      - 订单编号及出货号码请告知
+      - 我有订[日本](part)[矫正](attr)[防滑](attr)[夹脚拖](goods)[女鞋](attr)不知道有没有订购成功
+      - 订单都不帮我处理吗
+
+
+
+
+
+#  - regex: ensure order info ok
+#    examples: |
+#      - \b订单正确\b
+#      - \b訂單正確\b
+#      - \b我的訂單信息是正確的\b
+#      - \b我的订单信息是正确的\b
+#      - \b新訂單信息正確\b
+#      - \b新订单信息正确\b
+#      - \b確需取消訂單\b
+#      - \b确需取消订单\n
+#  - intent: affirm
+#    examples: |
+#      - 確需取消訂單
+#      - 确需取消订单
+#      - 訂單正確
+#      - 订单正确
+#      - 我的訂單信息是正確的
+#      - 我的订单信息是正确的
+#      - 新訂單信息正確
+#      - 新订单信息正确
+#      - 是的
+#      - 要
+#      - 需要
+#      - 要得
+#      - yes
+#      - yeah
+#      - yep
+#      - y
+#      - indeed
+#      - ofcourse
+#      - correct
+#      - yeeh
+#      - indeed
+#      - of course
+#      - that sounds good
+#      - correct
+#      - 对
+#      - 就是这样
+#      - 正确
+#      - ok
+#      - okay
+#      - 是
+#      - 是这样
+#      - 好
+#      - 行
+#      - 行没问题
+#      - 好的没问题
+#      - 好的
+#      - 可以
+#      - 对的
+#      - 嗯
+#      - 恩
+#      - 嗯嗯
+#      - 恩恩
+#      - 嗯呢
+#      - 没问题
+#      - no problem
+#
+#  - regex: ensure order no
+#    examples: |
+#      - \b我需要修改訂單\b
+#      - \b我需要修改订单\b
+#      - \b我需要修正我的訂單信息\b
+#      - \b我需要修正我的订单信息\b
+#      - \b信息有誤終止修改\b
+#      - \b信息有误终止修改\b
+#      - \b收到貨物后再做決定\b
+#      - \b收到货物后再做决定\b
+#  - intent: deny
+#    examples: |
+#      - no
+#      - wrong
+#      - 不
+#      - 不是
+#      - 不对
+#      - 错误
+#      - 错的
+#      - 我需要修改訂單
+#      - 我需要修改订单
+#      - 我需要修正我的訂單信息
+#      - 我需要修正我的订单信息
+#      - 信息有誤終止修改
+#      - 信息有误终止修改
+#      - 收到貨物后再做決定
+#      - 收到货物后再做决定
